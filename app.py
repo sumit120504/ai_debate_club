@@ -29,10 +29,10 @@ def ask_ai(prompt):
     response = client.chat.completions.create(
         model = MODEL,
         messages = [
-            [
-                "role" : user,
+            {
+                "role" : "user",
                 "content" : prompt
-            ]
+            }
         ],
         temperature = 0.7
     )
@@ -363,17 +363,17 @@ if st.button("Start Debate", type = "primary"):
                 con_argument
             )
 
-st.success("Debate Completed ")
-st.divider()
-st.subheader("Pro Debater")
-st.write(pro_argument)
-st.divider()
-st.subheader("Con Debater")
-st.write(con_argument)
-st.divider()
-st.subheader("Podcast Debate")
-st.write(host_result)
-st.divider()
+        st.success("Debate Completed ")
+        st.divider()
+        st.subheader("Pro Debater")
+        st.write(pro_argument)
+        st.divider()
+        st.subheader("Con Debater")
+        st.write(con_argument)
+        st.divider()
+        st.subheader("Podcast Debate")
+        st.write(host_result)
+        st.divider()
 
 st.caption(
     "AI Debate Club ~ Powered by Groq"
