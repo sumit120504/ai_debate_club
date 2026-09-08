@@ -327,3 +327,54 @@ def generate_host(topic, pro_argument, con_argument):
 
     return ask_ai(prompt)
 
+#streamlit ui
+st.title("AI Debate Club")
+
+st.write(
+    "Create a debate between 2 AI debators and let an AI host judge"
+)
+
+st.divider()
+
+topic = st.text_area(
+    "Enter your debate topic",
+    placeholder = "Example: Should AI replace data entry jobs?"
+)
+
+
+#Generate debate
+if st.button("Start Debate", type = "primary"):
+    if not topic.strip():
+        st.warning("Please enter a debate topic.")
+
+    else:
+        # Pro
+        with st.spinner("Pro Debater is preparing arguments....."):
+            pro_argument = generate_pro_argument(topic)
+        
+        # Con
+        with st.spinner("Con Debater is preparing arguments....."):
+            con_argument = generate_con_argument(topic)
+         
+        with st.spinner("Host is analyzing the debate...."):
+            host_result = generate_host(
+                topic, 
+                pro_argument,
+                con_argument
+            )
+
+st.success("Debate Completed ")
+st.divider()
+st.subheader("Pro Debater")
+st.write(pro_argument)
+st.divider()
+st.subheader("Con Debater")
+st.write(con_argument)
+st.divider()
+st.subheader("Podcast Debate")
+st.write(host_result)
+st.divider()
+
+st.caption(
+    "AI Debate Club ~ Powered by Groq"
+)
