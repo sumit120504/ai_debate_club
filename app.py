@@ -8,24 +8,14 @@ load_dotenv()
 
 # Get API key
 API_KEY = os.getenv("GROQ_API_KEY")
-
-if not API_KEY:
-    st.error("GROQ_API_KEY is missing. Please add it to your .env file.")
-    st.stop()
-
-# Configure Gemini
-client = Groq(api_key=API_KEY)
-
-# Page configuration
-st.set_page_config(
-    page_title="AI Debate Club",
-    page_icon="🤖",
-    layout="centered"
-)
+client = Groq(api_key=API_KEY) if API_KEY else None
 
 MODEL = "openai/gpt-oss-20b"
 
 def ask_ai(prompt):
+    if client is None:
+        raise RuntimeError("GROQ_API_KEY is missing. Add it to your .env file.")
+
     response = client.chat.completions.create(
         model = MODEL,
         messages = [
@@ -327,54 +317,41 @@ def generate_host(topic, pro_argument, con_argument):
 
     return ask_ai(prompt)
 
-#streamlit ui
-st.title("AI Debate Club")
+if __name__ == "__main__":
+    st.set_page_config(page_title="AI Debate Club", page_icon="🤖")
+    st.title("AI Debate Club")
+    st.write("Create a debate between two AI debaters and let an AI host judge.")
 
-st.write(
-    "Create a debate between 2 AI debators and let an AI host judge"
-)
+    topic = st.text_area(
+        "Enter your debate topic",
+        placeholder="Example: Should AI replace data entry jobs?",
+    )
 
-st.divider()
+    if st.button("Start Debate", type="primary"):
+        if not topic.strip():
+            st.warning("Please enter a debate topic.")
+        else:
+            try:
+                with st.spinner("Pro debater is preparing an argument..."):
+                    pro_argument = generate_pro_argument(topic)
 
-topic = st.text_area(
-    "Enter your debate topic",
-    placeholder = "Example: Should AI replace data entry jobs?"
-)
+                with st.spinner("Con debater is preparing an argument..."):
+                    con_argument = generate_con_argument(topic)
 
+                with st.spinner("Host is judging the debate..."):
+                    host_result = generate_host(topic, pro_argument, con_argument)
+            except Exception as error:
+                st.error(f"The debate could not be completed: {error}")
+            else:
+                st.success("Debate completed")
+                pro_tab, con_tab, verdict_tab = st.tabs(
+                    ["Pro argument", "Con argument", "Host's verdict"]
+                )
+                with pro_tab:
+                    st.write(pro_argument)
+                with con_tab:
+                    st.write(con_argument)
+                with verdict_tab:
+                    st.write(host_result)
 
-#Generate debate
-if st.button("Start Debate", type = "primary"):
-    if not topic.strip():
-        st.warning("Please enter a debate topic.")
-
-    else:
-        # Pro
-        with st.spinner("Pro Debater is preparing arguments....."):
-            pro_argument = generate_pro_argument(topic)
-        
-        # Con
-        with st.spinner("Con Debater is preparing arguments....."):
-            con_argument = generate_con_argument(topic)
-         
-        with st.spinner("Host is analyzing the debate...."):
-            host_result = generate_host(
-                topic, 
-                pro_argument,
-                con_argument
-            )
-
-        st.success("Debate Completed ")
-        st.divider()
-        st.subheader("Pro Debater")
-        st.write(pro_argument)
-        st.divider()
-        st.subheader("Con Debater")
-        st.write(con_argument)
-        st.divider()
-        st.subheader("Podcast Debate")
-        st.write(host_result)
-        st.divider()
-
-st.caption(
-    "AI Debate Club ~ Powered by Groq"
-)
+    st.caption("AI Debate Club - Powered by Groq")
